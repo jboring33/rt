@@ -3,7 +3,9 @@ import pandas as pd
 import yfinance as yf
 
 
-def rank_macro_universe(universe_dict: dict, benchmark: str = "SPY") -> pd.DataFrame:
+def rank_macro_universe(
+    universe_dict: dict, benchmark: str = "SPY"
+) -> pd.DataFrame:
   """Downloads 6m data for global/sector ETFs and ranks them by multi-month relative performance against a chosen benchmark."""
   tickers = list(universe_dict.values())
   if benchmark not in tickers:
@@ -15,21 +17,30 @@ def rank_macro_universe(universe_dict: dict, benchmark: str = "SPY") -> pd.DataF
   if isinstance(data, pd.Series):
     data = data.to_frame()
 
-  if benchmark not in data.columns:
+  if data.empty or benchmark not in data.columns:
     return pd.DataFrame()
 
-  # Calculate 3-month (63 trading days) and 6-month returns
-  returns_3m = (data.iloc[-1] - data.iloc[-min(63, len(data) - 1)]) / data.iloc[
-      -min(63, len(data) - 1)
+  # Clean data and handle missing values
+  data = data.ffill().dropna(subset=[benchmark])
+  if len(data) < 5:
+    return pd.DataFrame()
+
+  # Safe lookback calculation (using available history up to 63 trading days)
+  lookback_periods = min(63, len(data) - 1)
+
+  returns_3m = (data.iloc[-1] - data.iloc[-lookback_periods]) / data.iloc[
+      -lookback_periods
   ]
   returns_6m = (data.iloc[-1] - data.iloc[0]) / data.iloc[0]
 
-  benchmark_3m = returns_3m[benchmark]
-  benchmark_6m = returns_6m[benchmark]
+  benchmark_3m = returns_3m.get(benchmark, 0)
+  benchmark_6m = returns_6m.get(benchmark, 0)
 
   results = []
   for name, symbol in universe_dict.items():
     if symbol in data.columns:
+      if pd.isna(returns_3m[symbol]) or pd.isna(returns_6m[symbol]):
+        continue
       rel_3m = returns_3m[symbol] - benchmark_3m
       rel_6m = returns_6m[symbol] - benchmark_6m
       composite_score = (rel_3m * 0.6) + (rel_6m * 0.4)
@@ -39,9 +50,12 @@ def rank_macro_universe(universe_dict: dict, benchmark: str = "SPY") -> pd.DataF
           "Ticker": symbol,
           "3M Return": f"{returns_3m[symbol]:.1%}",
           "6M Return": f"{returns_6m[symbol]:.1%}",
-          "3M Rel vs {benchmark}": f"{rel_3m:+.1%}",
+          f"3M Rel vs {benchmark}": f"{rel_3m:+.1%}",
           "Score": round(composite_score, 4),
       })
+
+  if not results:
+    return pd.DataFrame()
 
   df_ranked = pd.DataFrame(results).sort_values(by="Score", ascending=False)
   return df_ranked
