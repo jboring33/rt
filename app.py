@@ -1,5 +1,6 @@
 import json
 import os
+import pandas as pd
 import streamlit as st
 from utils.technicals import rank_macro_universe, screen_institutional_dip
 
@@ -47,7 +48,7 @@ with st.expander(
     3. **Stage 3 (Shortlist & Watchlist Docket):** Pushes qualified candidates directly into persistent session-state watchlists for precise entry tracking.
     
     ### Criteria for Success (The Institutional Filters)
-    * **Structural Uptrend:** $\text{Price} > 200\text{ SMA}$ and $50\text{ SMA} > 200\text{ SMA}$.
+    * **Structural Uptrend:** $\\text{Price} > 200\\text{ SMA}$ and $50\\text{ SMA} > 200\\text{ SMA}$.
     * **The Dip Zone:** Price is resting near the 50-day moving average ($\le 4\%$ away) or undergoing a controlled $5\text{--}12\%$ pullback from 52-week highs.
     * **Volume Footprint:** 50-day Up/Down Volume Ratio $\ge 1.15$, proving institutional accumulation on rallies and calm support during pullbacks.
     """)
@@ -116,7 +117,7 @@ elif funnel_stage == "Stage 2: Institutional Dip Screener":
 
     for i, ticker in enumerate(universe_tickers):
       res = screen_institutional_dip(ticker)
-      if res["pass"]:
+      if res.get("pass"):
         results.append({"Ticker": ticker, **res})
       progress_bar.progress((i + 1) / total)
 
@@ -136,24 +137,20 @@ elif funnel_stage == "Stage 2: Institutional Dip Screener":
         if st.button("Add to Core ETF Watchlist"):
           if selected_to_add not in st.session_state.core_watchlist:
             st.session_state.core_watchlist.append(selected_to_add)
-            st.success(
-                f"Added {selected_to_add} to Core ETF Watchlist!"
-            )
+            st.success(f"Added {selected_to_add} to Core ETF Watchlist!")
           else:
             st.warning(f"{selected_to_add} is already in your Core Watchlist.")
       else:
         if st.button("Add to Satellite Stock Watchlist"):
           if selected_to_add not in st.session_state.stock_watchlist:
             st.session_state.stock_watchlist.append(selected_to_add)
-            st.success(
-                f"Added {selected_to_add} to Satellite Stock Watchlist!"
-            )
+            st.success(f"Added {selected_to_add} to Satellite Stock Watchlist!")
           else:
             st.warning(f"{selected_to_add} is already in your Stock Watchlist.")
     else:
       st.warning(
-          "No tickers passed the strict institutional dip criteria in this"
-          " run. Markets may be extended."
+          "No tickers passed the strict institutional dip criteria in this run."
+          " Markets may be extended."
       )
 
 # --- STAGE 3: Research Docket & Watchlist ---
