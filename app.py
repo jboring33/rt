@@ -131,7 +131,10 @@ elif funnel_stage == "Stage 2: Institutional Dip Screener":
       st.session_state.last_scan_target = scan_target
 
   # Display persistent scan results if available
-  if "last_scan_results" in st.session_state and st.session_state.last_scan_results:
+  if (
+      "last_scan_results" in st.session_state
+      and st.session_state.last_scan_results
+  ):
     res_df = pd.DataFrame(st.session_state.last_scan_results)
     st.success(
         f"Found {len(res_df)} candidates meeting institutional dip criteria!"
@@ -164,13 +167,10 @@ elif funnel_stage == "Stage 2: Institutional Dip Screener":
             st.session_state.stock_watchlist.append(t)
             added += 1
         if added > 0:
-          st.success(
-              f"Added {added} ticker(s) to Satellite Stock Watchlist!"
-          )
+          st.success(f"Added {added} ticker(s) to Satellite Stock Watchlist!")
         else:
           st.info(
-              "Selected tickers are already in your Satellite Stock"
-              " Watchlist."
+              "Selected tickers are already in your Satellite Stock Watchlist."
           )
   elif "last_scan_results" in st.session_state:
     st.warning(
@@ -190,9 +190,18 @@ elif funnel_stage == "Stage 3: Research Docket & Watchlist":
   with col1:
     st.subheader("🛡️ Core ETF Watchlist")
     if st.session_state.core_watchlist:
-      for t in st.session_state.core_watchlist:
-        st.code(t)
-      if st.button("Clear Core Watchlist"):
+      for t in list(st.session_state.core_watchlist):
+        c1, c2, c3 = st.columns([2, 2, 1])
+        with c1:
+          st.code(t)
+        with c2:
+          st.markdown(f"[Chart ↗](https://finance.yahoo.com/quote/{t})")
+        with c3:
+          if st.button("❌", key=f"del_core_{t}"):
+            st.session_state.core_watchlist.remove(t)
+            st.rerun()
+
+      if st.button("Clear Core Watchlist", key="clear_core"):
         st.session_state.core_watchlist = []
         st.rerun()
     else:
@@ -201,10 +210,27 @@ elif funnel_stage == "Stage 3: Research Docket & Watchlist":
   with col2:
     st.subheader("🚀 Satellite Stock Watchlist (10-20% Allocation)")
     if st.session_state.stock_watchlist:
-      for t in st.session_state.stock_watchlist:
-        st.code(t)
-      if st.button("Clear Stock Watchlist"):
+      for t in list(st.session_state.stock_watchlist):
+        c1, c2, c3 = st.columns([2, 2, 1])
+        with c1:
+          st.code(t)
+        with c2:
+          st.markdown(f"[Chart ↗](https://finance.yahoo.com/quote/{t})")
+        with c3:
+          if st.button("❌", key=f"del_stock_{t}"):
+            st.session_state.stock_watchlist.remove(t)
+            st.rerun()
+
+      if st.button("Clear Stock Watchlist", key="clear_stock"):
         st.session_state.stock_watchlist = []
         st.rerun()
+
+      st.divider()
+      # Bridge link to open watchlist in your 200 Day Triggers app
+      tickers_string = ",".join(st.session_state.stock_watchlist)
+      target_200day_url = f"https://your-200-day-triggers-app.streamlit.app/?preset=Watching&tickers={tickers_string}"
+      st.markdown(
+          f"🔗 **[Open Watchlist in 200 Day Triggers App ↗]({target_200day_url})**"
+      )
     else:
       st.info("No Satellite Stocks saved yet.")
