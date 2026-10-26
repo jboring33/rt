@@ -1,0 +1,24 @@
+{
+  "global_macro_universe": {
+    "S&P 500 Large Cap": "SPY",
+    "Nasdaq 100 Tech/Growth": "QQQ",
+    "Dow Jones Industrials": "DIA",
+    "Russell 2000 Small Cap": "IWM",
+    "Emerging Markets": "EEM",
+    "Developed International": "EFA",
+    "Semiconductors": "SMH",
+    "Aerospace & Defense": "ITA",
+    "Energy Select": "XLE",
+    "Financials Select": "XLF",
+    "Healthcare Select": "XLV"
+  },
+  "default_stock_universe": [
+    "NVDA", "AAPL", "MSFT", "AMZN", "GOOGL", "META", "AMD", "COST", "AVGO", "LLY", "NFLX", "JPM", "V", "UNH", "XOM"
+  ],
+  "benchmarks": ["SPY", "QQQ", "DIA", "EEM"],
+  "criteria_thresholds": {
+    "max_dist_from_50sma_pct": 0.04,
+    "min_ud_vol_ratio": 1.15,
+    "lookback_period": "1y"
+  }
+}
