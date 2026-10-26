@@ -228,7 +228,7 @@ elif funnel_stage == "Stage 3: Research Docket & Watchlist":
       st.divider()
       # Bridge link to open watchlist in your 200 Day Triggers app
       tickers_string = ",".join(st.session_state.stock_watchlist)
-      target_200day_url = f"https://your-200-day-triggers-app.streamlit.app/?preset=Watching&tickers={tickers_string}"
+      target_200day_url = f"https://200-day-triggers-2swipksmm4twwczyuhaacb.streamlit.app/?preset=Watching&tickers={tickers_string}"
       st.markdown(
           f"🔗 **[Open Watchlist in 200 Day Triggers App ↗]({target_200day_url})**"
       )
